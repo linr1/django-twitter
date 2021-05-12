@@ -26,7 +26,7 @@ class TweetApiTests(TestCase):
         ]
 
     def test_list_api(self):
-        response =  self.anonymous_client.get(TWEET_LIST_API)
+        response = self.anonymous_client.get(TWEET_LIST_API)
         self.assertEqual(response.status_code, 400)
 
         # normal request
