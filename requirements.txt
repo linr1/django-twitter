@@ -1,3 +1,4 @@
+django-filter==2.4.0
 asgiref==3.3.4
 asn1crypto==0.24.0
 attrs==17.4.0
