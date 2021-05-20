@@ -22,8 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'd(^359m#(=y35zx542zs4__xadlml4vf#u8ixa_0o&7j)@)wt-'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
 
 ALLOWED_HOSTS = ['127.0.0.1', '192.168.33.10', 'localhost']
 INTERNAL_IPS = ['10.0.2.2']
@@ -39,8 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # third party
     'rest_framework',
+    'django_filters',
     'debug_toolbar',
+
+    # project apps
     'tweets',
     'friendships',
     'newsfeeds',
@@ -49,7 +52,10 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ]
 }
 
 MIDDLEWARE = [
@@ -136,3 +142,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+try:
+    from .local_settings import *
+except:
+    pass
