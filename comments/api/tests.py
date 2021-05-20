@@ -86,7 +86,7 @@ class CommentApiTests(TestCase):
 
         # ok with tweet_id, no comments at the beginning
         response = self.anonymous_client.get(COMMENT_URL, {
-            'tweet_id': self.tweet_id,
+            'tweet_id': self.tweet.id,
         })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['comments']), 0)
@@ -96,7 +96,7 @@ class CommentApiTests(TestCase):
         self.create_comment(self.dongxie, self.tweet, '2')
         self.create_comment(self.dongxie, self.create_tweet(self.dongxie), '3')
         response = self.anonymous_client.get(COMMENT_URL, {
-            'tweet_id': self.tweet_id,
+            'tweet_id': self.tweet.id,
         })
         self.assertEqual(len(response.data['comments']), 2)
         self.assertEqual(response.data['comments'][0]['content'], '1')
