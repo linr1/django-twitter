@@ -156,8 +156,6 @@ if TESTING:
 AWS_STORAGE_BUCKET_NAME = 'my-twitter-prj'
 AWS_S3_REGION_NAME = 'us-west-1'
 
-
-
 try:
     from .local_settings import *
 except:
