@@ -133,8 +133,9 @@ class NotificationApiTests(TestCase):
         })
         notification = self.linghu.notifications.first()
 
-        url = '/api/notifications/{}'.format(notification.id)
+        url = '/api/notifications/{}/'.format(notification.id)
         response = self.dongxie_client.post(url, {'unread': False})
+        print(response)
         self.assertEqual(response.status_code, 405)
 
         response = self.anonymous_client.put(url, {'unread': False})
