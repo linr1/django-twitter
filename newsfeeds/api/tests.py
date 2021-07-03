@@ -1,5 +1,6 @@
 from rest_framework.test import APIClient
 from testing.testcases import TestCase
+from utils.paginations import EndlessPagination
 
 NEWSFEEDS_URL = '/api/newsfeeds/'
 POST_TWEETS_URL = '/api/tweets/'
@@ -27,11 +28,11 @@ class NewsFeedApiTests(TestCase):
 
         response = self.linghu_client.get(NEWSFEEDS_URL)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['newsfeeds']), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
         self.linghu_client.post(POST_TWEETS_URL, {'content': 'Hello World'})
         response = self.linghu_client.get(NEWSFEEDS_URL)
-        self.assertEqual(len(response.data['newsfeeds']), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
         self.linghu_client.post(FOLLOW_URL.format(self.dongxie.id))
         response = self.dongxie_client.post(POST_TWEETS_URL, {
@@ -39,6 +40,6 @@ class NewsFeedApiTests(TestCase):
         })
         posted_tweet_id = response.data['id']
         response = self.linghu_client.get(NEWSFEEDS_URL)
-        self.assertEqual(len(response.data['newsfeeds']), 2)
-        self.assertEqual(response.data['newsfeeds'][0]['tweet']['id'], posted_tweet_id)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['tweet']['id'], posted_tweet_id)
 
