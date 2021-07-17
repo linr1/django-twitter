@@ -113,23 +113,62 @@ class CommentApiTests(TestCase):
         })
         self.assertEqual(len(response.data['comments']), 2)
 
-        def test_comments_count(self):
-            # test tweet detail api
-            tweet = self.create_tweet(self.linghu)
-            url = TWEET_DETAIL_API.format(tweet.id)
-            response = self.dongxie_client.get(url)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data['comment_count'], 0)
+    def test_comments_count(self):
+        # test tweet detail api
+        tweet = self.create_tweet(self.linghu)
+        url = TWEET_DETAIL_API.format(tweet.id)
+        response = self.dongxie_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['comments_count'], 0)
 
-            # test tweet list api
-            self.create_comment(self.linghu, tweet)
-            response = self.dongxie_client.get(TWEET_LIST_API, {'user_id': self.linghu.id})
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data['results'][0]['comment_count'], 1)
+        # test tweet list api
+        self.create_comment(self.linghu, tweet)
+        response = self.dongxie_client.get(TWEET_LIST_API, {'user_id': self.linghu.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['results'][0]['comments_count'], 1)
 
-            # test newsfeed list api
-            self.create_comment(self.dongxie, tweet)
-            self.create_newsfeed(self.dongxie, tweet)
-            response = self.dongxie_client.get(NEWSFEED_LIST_API)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data['results'][0]['tweet']['comment_count'], 2)
+        # test newsfeed list api
+        self.create_comment(self.dongxie, tweet)
+        self.create_newsfeed(self.dongxie, tweet)
+        response = self.dongxie_client.get(NEWSFEED_LIST_API)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['results'][0]['tweet']['comments_count'], 2)
+
+    def test_comments_count_with_cache(self):
+        tweet_url = '/api/tweets/{}/'.format(self.tweet.id)
+        response = self.linghu_client.get(tweet_url)
+        self.assertEqual(self.tweet.comments_count, 0)
+        self.assertEqual(response.data['comments_count'], 0)
+
+        data = {'tweet_id': self.tweet.id, 'content': 'a comment'}
+        for i in range(2):
+            _, client = self.create_user_and_client('user{}'.format(i))
+            client.post(COMMENT_URL, data)
+            response = client.get(tweet_url)
+            self.assertEqual(response.data['comments_count'], i + 1)
+            self.tweet.refresh_from_db()
+            self.assertEqual(self.tweet.comments_count, i + 1)
+
+        comment_data = self.dongxie_client.post(COMMENT_URL, data).data
+        response = self.dongxie_client.get(tweet_url)
+        self.assertEqual(response.data['comments_count'], 3)
+        self.tweet.refresh_from_db()
+        self.assertEqual(self.tweet.comments_count, 3)
+
+        # Update comment shouldn't update comments_count
+        comment_url = '{}{}/'.format(COMMENT_URL, comment_data['id'])
+        response = self.dongxie_client.put(comment_url, {'content': 'updated'})
+        self.assertEqual(response.status_code, 200)
+        response = self.dongxie_client.get(tweet_url)
+        self.assertEqual(response.data['comments_count'], 3)
+        self.tweet.refresh_from_db()
+        self.assertEqual(self.tweet.comments_count, 3)
+
+        response = self.dongxie_client.delete(comment_url)
+        self.assertEqual(response.status_code, 200)
+        response = self.linghu_client.get(tweet_url)
+        self.assertEqual(response.data['comments_count'], 2)
+        self.tweet.refresh_from_db()
+        self.assertEqual(self.tweet.comments_count, 2)
+
+
